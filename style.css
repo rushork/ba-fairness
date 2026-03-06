@@ -24,6 +24,22 @@ body {
   display: flex;
   gap: 16px;
   max-width: 100vw;
+  position: relative;
+}
+
+#app-header {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
+#app-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 /* SIDEBARS */
@@ -32,13 +48,64 @@ body {
   width: 220px;
   padding: 10px;
   border: 2px solid #333;
-  background-color: white;
+  background: linear-gradient(135deg, #fafafa 0%, #eaeaea 100%);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
   box-sizing: border-box;
+  border-radius: 4px;
 }
+
+#sidebar h3 {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+  margin-top: 0;
+}
+
 
 #sidebar button {
   width: 100%;
   margin-bottom: 6px;
+  padding: 8px;
+  background: #5a8dee;
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#sidebar button:hover {
+  background: #3a6edc;
+}
+
+.dimension-input {
+  margin-bottom: 10px;
+}
+
+.dimension-input label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.dimension-input input {
+  width: 100%;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.deployment-mode {
+  margin: 8px 0;
+}
+
+.deployment-mode label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.deployment-mode input {
+  margin-right: 6px;
 }
 
 /* BOARD */
@@ -46,19 +113,22 @@ body {
 #board {
   position: relative;
 
-  /* Responsive board sizing */
-  width: min(70vw, 800px);
-  aspect-ratio: 8 / 9;
-
-  border: 2px solid #333;
-  background-color: white;
+  border: 4px solid #444;
+  border-radius: 8px;
+  background-color: #fefefe;
 
   background-image:
-    linear-gradient(to right, #ccc 1px, transparent 1px),
-    linear-gradient(to bottom, #ccc 1px, transparent 1px);
-
-  background-size: calc(100% / 8) calc(100% / 9);
+    linear-gradient(to right, #ddd 1px, transparent 1px),
+    linear-gradient(to bottom, #ddd 1px, transparent 1px);
 }
+
+#board::before {
+  content: '';
+  position: absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(255,255,255,0.4);
+}
+
 
 /* CENTER DIVIDER */
 
@@ -73,6 +143,38 @@ body {
   pointer-events: none;
 }
 
+/* DEPLOYMENT ZONES */
+
+.deployment-zone {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+.diag-divider {
+  position: absolute;
+  pointer-events: none;
+  background: #333;
+  opacity: 0.7;
+}
+
+.north-zone {
+  background-color: blue;
+  border: 2px dashed blue;
+}
+
+.south-zone {
+  background-color: red;
+  border: 2px dashed red;
+}
+
+.no-mans-land {
+  background-color: white; /* cover underlying colors */
+  border: 2px dashed gray;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
 /* TERRAIN */
 
 .terrain {
@@ -84,35 +186,68 @@ body {
   box-sizing: border-box;
 }
 
-/* Hard cover */
-.building {
+/* Hard terrain (houses, structures, etc) */
+.hard {
   background: #8b5a2b;
 }
 
-/* Soft cover */
-.hill {
-  background: rgba(160, 160, 160, 0.5);
-}
-
-/* Circular forest */
-.forest {
+/* Light terrain (fences, light cover, etc) */
+.light {
   background: rgba(46, 139, 87, 0.45);
+}
+
+/* Delete button */
+.delete-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
+  border: none;
+  background-color: #ff4444;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Hedgerow */
-.hedge {
-  background: rgba(34, 139, 34, 0.6);
-  height: 3.5%;
-  top: 3.8%;
+.delete-btn:hover {
+  background-color: #cc0000;
 }
 
-/* Bocage */
-.bocage {
-  background: rgba(20, 90, 20, 0.85);
-  height: 4.5%;
-  top: 3.3%;
-  border: 2px solid #1f4f1f;
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid white;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.resize-handle.nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.resize-handle.sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.resize-handle.se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
 }
 
 /* WEIGHT SLIDERS */
@@ -123,8 +258,14 @@ body {
 
 .weight-slider input {
   width: 100%;
+  accent-color: #5a8dee;
 }
 
+.dimension-input input,
+.deployment-mode input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 /* SMALL SCREEN TWEAK */
 
 @media (max-width: 1100px) {
